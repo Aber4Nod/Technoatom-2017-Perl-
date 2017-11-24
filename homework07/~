@@ -1,0 +1,76 @@
+#!/usr/bin/env perl
+
+# use EV;
+use 5.016;
+use AnyEvent::HTTP;
+use URI;
+use DDP;
+
+my $url = "http://search.cpan.org";
+# my $url = "http://mfk.msu.ru";
+my $host = URI->new($url)->host;
+
+my @queue = ($url);
+my %seen;
+my $ACTIVE = 0;
+$AnyEvent::HTTP::MAX_PER_HOST = my $LIMIT = 100;
+
+my $worker;$worker = sub {
+	my $uri = shift @queue or return;
+	$seen{ $uri } = undef;
+	say "[$ACTIVE:$LIMIT] Start loading $uri (".(0+@queue).")";
+	$ACTIVE++;
+
+	http_request
+		HEAD => $uri,
+		timeout => 10,
+		sub {
+			my ($body,$hdr) = @_;
+			if (exists $hdr->{'content-length'} and $hdr->{'content-length'} < 4096) {
+				http_request
+					GET => $uri,
+					timeout => 10,
+					sub {
+						my ($body,$hdr) = @_;
+						say "End loading $uri: $hdr->{Status}";
+						$ACTIVE--;
+						$seen{ $uri } = $hdr->{Status};
+						if ($hdr->{Status} == 200) {
+							say $hdr->{URL};
+							# my @href = $body =~ m{<a[^>]*href=(|"([^"]+)"|(\S+))}i;
+							my @href = $body =~ m{<a[^>]*href="([^"]+)"}sig;
+							# p @href;
+							for my $href (@href) {
+								my $new = URI->new_abs( $href, $hdr->{URL} );
+								next if $new !~ /^https?:/;
+								next if $new->host ne $host;
+								next if exists $seen{ $new };
+								# say "$href -> $new";
+								push @queue, $new;
+							}
+							# p $hdr;
+							# p $body;
+
+						}
+						else {
+							warn "Failed to fetch: $hdr->{Status} $hdr->{Reason}";
+						}
+						while (@queue and $ACTIVE < $LIMIT) {
+							$worker->();
+						}
+					}
+				;
+			}
+			else {
+				say "Skip loading $uri: $hdr->{Status} ($hdr->{'content-length'})";
+				$ACTIVE--;
+				$worker->();
+			}
+		}
+	;
+
+
+};$worker->();
+
+AE::cv->recv;
+
