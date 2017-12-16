@@ -1,0 +1,63 @@
+<div class="main">
+        <% IF session.logged_in %>
+            <div class="user">
+                <h1> Session </h1>
+                <h2>login: </h2> <h3> <%user%> </h3>
+                    <form method="post">
+                        <input type="hidden" name="logout" value="1" />
+                        <p><input type="hidden" name="csrf_token" value="<%csrf_token%>" /></p>
+                        <p align="left"> <input type="submit" value="Logout"/> </p>            
+                    </form>
+            </div>    
+            <div class="creat" align="left">
+                <h2> Note information </h2>
+                <form method="post">
+                    <p><input type="hidden" name="csrf_token" value="<%csrf_token%>" /></p>
+                    <p><input type="title" name="title" placeholder="Title" /></p>
+                    <p><textarea name="text" placeholder="Note text"></textarea></p>
+                    <p><textarea name="share" wrap="soft" placeholder="Shared users"></textarea></p>
+                    <p><input type="submit" value="Create" /></p>
+                </form>
+            </div>
+            <div class="notes" align="left">
+                <h2>Notes list</h2>
+                <% IF notes.size > 0 %>
+                    <% FOR note in notes %>
+                        <div class="note">
+                            <div class="note_title">
+                                <a href="/note/<%note.note_id%>">
+                                    <%note.title%>
+                                </a>
+                            </div>
+                            <% FOR row in note.body %>
+                                <%row%>
+                            <%END%>
+                                <p class="note_users">
+                                    <% IF note.shared_id == '' %>
+                                        <% IF note.sharedWith.size > 0 %>
+                                            Shared with:
+                                            <ul>
+                                            <% FOR user in note.sharedWith %>
+                                                <li><%user%></li>
+                                            <%END%>
+                                            </ul>
+                                        <% END %>
+                                    <% ELSE %>
+                                        Shared from:
+                                        <ul>
+                                        <% FOR user in note.shared_ids %>
+                                            <li><%user%></li>
+                                        <%END%>
+                                        </ul>
+                                    <% END %>
+                                </p>
+                        </div>
+                    <% END %>
+                <% ELSE %>
+                <p>right now its empty</p>
+                <% END %>
+            </div>
+        <% ELSE %>
+        <p class="error"> <strong>ERROR: Authorize first </p>
+        <% END %>
+</div>

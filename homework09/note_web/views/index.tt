@@ -1,0 +1,10 @@
+<div align="left" class="main">
+    <div class="b-auth b-block">
+        <h2>Authorization</h2>
+            <form method="post" onsubmit="document.getElementById('submit').disable=true;">
+                <p><input type="hidden" name="csrf_token" value="<% csrf_token %>" /></p>
+                <p><input type="text" name="user" placeholder="username" /></p>
+                <p><input type="password" name="pswd" placeholder="password" /></p>
+                <p><input type="submit" value="Login" /> or <a href="/registration">Register</a></p>
+            </form>
+</div>     

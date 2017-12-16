@@ -1,0 +1,9 @@
+<div align="left" class="main">
+    <h2>Registration</h2>
+    <form method="post" onsubmit="document.getElementById('submit').disable=true;">
+        <p><input type="hidden" name="csrf_token" value="<% csrf_token %>" /></p>
+        <p><input type="text" name="user" placeholder="username" /></p>
+        <p><input type="password" name="pswd" placeholder="password" /></p>
+        <p><input type="submit" value="Register"/> or <a href="/">return</a> </p>
+    </form>
+</div>

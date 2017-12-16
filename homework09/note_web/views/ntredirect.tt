@@ -1,0 +1,8 @@
+<div class="note">
+    <p class="note_title"> <% note.title %> </p>
+        <% FOR row in note.body %>
+            <% row %>
+        <% END %>
+        </p>
+    <a href="/home" style="margin: 7px">Return to home page</a>
+</div>
